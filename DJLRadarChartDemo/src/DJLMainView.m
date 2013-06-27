@@ -8,10 +8,14 @@
 
 #import "DJLMainView.h"
 #import "DJLRadarChart.h"
+#import "DJLRadarChartKey.h"
+#import "DJLRadarChartTitleLabel.h"
 
 @interface DJLMainView ()
 
 @property (nonatomic, strong) DJLRadarChart *radarChart;
+@property (nonatomic, strong) DJLRadarChartKey *radarChartKey;
+@property (nonatomic, strong) DJLRadarChartTitleLabel *radarChartTitle;
 
 @end
 
@@ -21,7 +25,6 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        [self addSubview:self.radarChart];
     }
     return self;
 }
@@ -29,18 +32,30 @@
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    self.radarChart.frame = self.frame;
+
+    self.radarChartTitle.frame = CGRectMake(0, 0, self.frame.size.width, 50);
+    self.radarChart.frame = CGRectMake(0, CGRectGetMaxY(self.radarChartTitle.frame), self.frame.size.width, self.frame.size.width);
+    self.radarChartKey.frame = CGRectMake(0, CGRectGetMaxY(self.radarChart.frame), self.frame.size.width, self.bounds.size.height - CGRectGetMaxY(self.radarChart.frame));
 }
 
-#pragma mark -- Private Properties
+#pragma mark -- Public methods
 
-- (DJLRadarChart *)radarChart
+- (void)addRadarChart:(DJLRadarChart *)radarChart
 {
-    if (!_radarChart) {
-        _radarChart = [[DJLRadarChart alloc] init];
-    }
-    
-    return _radarChart;
+    self.radarChart = radarChart;
+    [self addSubview:radarChart];
+}
+
+- (void)addRadarChartKey:(DJLRadarChartKey *)radarChartKey
+{
+    self.radarChartKey = radarChartKey;
+    [self addSubview:radarChartKey];
+}
+
+- (void)addRadarChartTitle:(DJLRadarChartTitleLabel *)radarChartTitle
+{
+    self.radarChartTitle = radarChartTitle;
+    [self addSubview:radarChartTitle];
 }
 
 @end

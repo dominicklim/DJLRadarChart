@@ -1,6 +1,6 @@
 //
 //  DJLRadarChartSpoke.h
-//  Danger Zone
+//  DJLRadarChart
 //
 //  Created by Dominick Lim on 5/4/13.
 //  Copyright (c) 2013 Dominick Lim. All rights reserved.
@@ -20,7 +20,7 @@
 - (id)initWithFrame:(CGRect)frame value:(float)value;
 - (id)initWithValue:(float)value;
 
-- (CGFloat)rotationAngle;
+//- (CGFloat)rotationAngle;
 - (CGFloat)cosAngle;
 - (CGFloat)sinAngle;
 

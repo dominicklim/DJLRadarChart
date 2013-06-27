@@ -7,11 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E60BB9031775105D00EBA1E8 /* DJLRadarChartController.m in Sources */ = {isa = PBXBuildFile; fileRef = E60BB90017750FB700EBA1E8 /* DJLRadarChartController.m */; };
+		E60BB9041775105D00EBA1E8 /* DJLRadarChartKey.m in Sources */ = {isa = PBXBuildFile; fileRef = E60BB90217750FD300EBA1E8 /* DJLRadarChartKey.m */; };
+		E60BB90817752C2400EBA1E8 /* noImage.png in Resources */ = {isa = PBXBuildFile; fileRef = E60BB90617752C2400EBA1E8 /* noImage.png */; };
 		E623C78E1772E40E00B49586 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E623C78B1772E40E00B49586 /* Default-568h@2x.png */; };
 		E623C78F1772E40E00B49586 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = E623C78C1772E40E00B49586 /* Default.png */; };
 		E623C7901772E40E00B49586 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E623C78D1772E40E00B49586 /* Default@2x.png */; };
 		E623C7971772EBDF00B49586 /* DJLMainVC.m in Sources */ = {isa = PBXBuildFile; fileRef = E623C7941772E77000B49586 /* DJLMainVC.m */; };
 		E623C7981772EBDF00B49586 /* DJLMainView.m in Sources */ = {isa = PBXBuildFile; fileRef = E623C7961772E7B200B49586 /* DJLMainView.m */; };
+		E666268A177B7EA40076E6FD /* DJLRadarChartTitleLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = E6662689177B7EA40076E6FD /* DJLRadarChartTitleLabel.m */; };
 		E6B1FC111772DDE2008D96A9 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6B1FC101772DDE2008D96A9 /* UIKit.framework */; };
 		E6B1FC131772DDE2008D96A9 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6B1FC121772DDE2008D96A9 /* Foundation.framework */; };
 		E6B1FC151772DDE2008D96A9 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6B1FC141772DDE2008D96A9 /* CoreGraphics.framework */; };
@@ -23,6 +27,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E60BB8FF17750FB700EBA1E8 /* DJLRadarChartController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DJLRadarChartController.h; sourceTree = "<group>"; };
+		E60BB90017750FB700EBA1E8 /* DJLRadarChartController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DJLRadarChartController.m; sourceTree = "<group>"; };
+		E60BB90117750FD300EBA1E8 /* DJLRadarChartKey.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DJLRadarChartKey.h; sourceTree = "<group>"; };
+		E60BB90217750FD300EBA1E8 /* DJLRadarChartKey.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DJLRadarChartKey.m; sourceTree = "<group>"; };
+		E60BB90617752C2400EBA1E8 /* noImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = noImage.png; sourceTree = "<group>"; };
 		E623C78B1772E40E00B49586 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		E623C78C1772E40E00B49586 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		E623C78D1772E40E00B49586 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
@@ -30,6 +39,8 @@
 		E623C7941772E77000B49586 /* DJLMainVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DJLMainVC.m; sourceTree = "<group>"; };
 		E623C7951772E7B200B49586 /* DJLMainView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DJLMainView.h; sourceTree = "<group>"; };
 		E623C7961772E7B200B49586 /* DJLMainView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DJLMainView.m; sourceTree = "<group>"; };
+		E6662688177B7EA40076E6FD /* DJLRadarChartTitleLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DJLRadarChartTitleLabel.h; sourceTree = "<group>"; };
+		E6662689177B7EA40076E6FD /* DJLRadarChartTitleLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DJLRadarChartTitleLabel.m; sourceTree = "<group>"; };
 		E6B1FC0D1772DDE2008D96A9 /* DJLRadarChartDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DJLRadarChartDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E6B1FC101772DDE2008D96A9 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		E6B1FC121772DDE2008D96A9 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -60,6 +71,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E60BB90517752C2400EBA1E8 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				E60BB90617752C2400EBA1E8 /* noImage.png */,
+			);
+			path = Images;
+			sourceTree = "<group>";
+		};
 		E6B1FC041772DDE2008D96A9 = {
 			isa = PBXGroup;
 			children = (
@@ -164,8 +183,15 @@
 			children = (
 				E6B1FC371772E460008D96A9 /* DJLRadarChart.h */,
 				E6B1FC381772E460008D96A9 /* DJLRadarChart.m */,
+				E60BB8FF17750FB700EBA1E8 /* DJLRadarChartController.h */,
+				E60BB90017750FB700EBA1E8 /* DJLRadarChartController.m */,
+				E60BB90117750FD300EBA1E8 /* DJLRadarChartKey.h */,
+				E60BB90217750FD300EBA1E8 /* DJLRadarChartKey.m */,
 				E6B1FC391772E460008D96A9 /* DJLRadarChartSpoke.h */,
 				E6B1FC3A1772E460008D96A9 /* DJLRadarChartSpoke.m */,
+				E6662688177B7EA40076E6FD /* DJLRadarChartTitleLabel.h */,
+				E6662689177B7EA40076E6FD /* DJLRadarChartTitleLabel.m */,
+				E60BB90517752C2400EBA1E8 /* Images */,
 			);
 			path = DJLRadarChart;
 			sourceTree = "<group>";
@@ -225,6 +251,7 @@
 				E623C7901772E40E00B49586 /* Default@2x.png in Resources */,
 				E6B1FC1B1772DDE2008D96A9 /* InfoPlist.strings in Resources */,
 				E623C78F1772E40E00B49586 /* Default.png in Resources */,
+				E60BB90817752C2400EBA1E8 /* noImage.png in Resources */,
 				E623C78E1772E40E00B49586 /* Default-568h@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -236,12 +263,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E60BB9031775105D00EBA1E8 /* DJLRadarChartController.m in Sources */,
+				E60BB9041775105D00EBA1E8 /* DJLRadarChartKey.m in Sources */,
 				E623C7971772EBDF00B49586 /* DJLMainVC.m in Sources */,
 				E623C7981772EBDF00B49586 /* DJLMainView.m in Sources */,
 				E6B1FC1D1772DDE2008D96A9 /* main.m in Sources */,
 				E6B1FC211772DDE2008D96A9 /* DJLAppDelegate.m in Sources */,
 				E6B1FC3B1772E460008D96A9 /* DJLRadarChart.m in Sources */,
 				E6B1FC3C1772E460008D96A9 /* DJLRadarChartSpoke.m in Sources */,
+				E666268A177B7EA40076E6FD /* DJLRadarChartTitleLabel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,7 +314,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -309,7 +339,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

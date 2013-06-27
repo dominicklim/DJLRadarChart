@@ -7,10 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
-@class DJLRadarChart;
+@class DJLRadarChart, DJLRadarChartKey, DJLRadarChartTitleLabel;
 
 @interface DJLMainView : UIView
 
-@property (nonatomic, strong, readonly) DJLRadarChart *radarChart;
+- (void)addRadarChart:(DJLRadarChart *)radarChart;
+- (void)addRadarChartKey:(DJLRadarChartKey *)radarChartKey;
+- (void)addRadarChartTitle:(DJLRadarChartTitleLabel *)radarChartTitle;
 
 @end

@@ -8,11 +8,16 @@
 
 #import "DJLMainVC.h"
 #import "DJLMainView.h"
+#import "DJLRadarChartController.h"
 #import "DJLRadarChart.h"
+#import "DJLRadarChartKey.h"
+#import "DJLRadarChartTitleLabel.h"
 
-@interface DJLMainVC ()<DJLRadarChartDataSource, DJLRadarChartDelegate>
+@interface DJLMainVC ()<DJLRadarChartDataSource, DJLRadarChartDelegate, DJLRadarChartKeyDataSource>
 
 @property (nonatomic, strong) DJLMainView *view;
+
+@property (nonatomic, strong) DJLRadarChartController *radarChartController;
 @property (nonatomic, strong) NSArray *starNames;
 @property (nonatomic, strong) NSArray *starColors;
 @property (nonatomic, strong) NSArray *spokeNames;
@@ -46,8 +51,10 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.view.radarChart.delegate = self;
-    self.view.radarChart.dataSource = self;
+    [self.radarChartController reloadData];
+    [self.view addRadarChart:self.radarChartController.radarChart];
+    [self.view addRadarChartKey:self.radarChartController.radarChartKey];
+    [self.view addRadarChartTitle:self.radarChartController.radarChartTitle];
 }
 
 - (void)didReceiveMemoryWarning
@@ -56,6 +63,28 @@
 }
 
 #pragma mark -- Private properties
+
+- (DJLRadarChartController *)radarChartController
+{
+    if (!_radarChartController) {
+        _radarChartController = [[DJLRadarChartController alloc] init];
+        _radarChartController.radarChart.dataSource = self;
+        _radarChartController.radarChart.delegate = self;
+        _radarChartController.radarChartKey.dataSource = self;
+        _radarChartController.radarChartTitle.text = @"Alfa Bravo";
+    }
+    
+    return _radarChartController;
+}
+
+- (NSArray *)starNames
+{
+    if (!_starNames) {
+        _starNames = @[@"India", @"Juliett", @"Kilo"];
+    }
+    
+    return _starNames;
+}
 
 - (NSArray *)starColors
 {
@@ -69,7 +98,7 @@
 - (NSArray *)spokeNames
 {
     if (!_spokeNames) {
-        _spokeNames = @[@"A", @"B", @"C", @"D", @"E", @"F"];
+        _spokeNames = @[@"Charlie", @"Delta", @"Echo", @"Foxtrot", @"Golf", @"Hotel"];
     }
     
     return _spokeNames;
@@ -86,14 +115,6 @@
     return _spokeValues;
 }
 
-#pragma mark -- Radar chart delegate
-
-- (void)radarChart:(DJLRadarChart *)radarChart valueOfSpokeAtIndex:(NSInteger)spokeIndex
-    forStarAtIndex:(NSInteger)starIndex didChange:(CGFloat)value
-{
-    
-}
-
 #pragma mark -- Radar chart data source
 
 - (NSString *)radarChart:(DJLRadarChart *)radarChart nameOfSpokeAtIndex:(NSInteger)index
@@ -103,30 +124,56 @@
 
 - (NSString *)radarChart:(DJLRadarChart *)radarChart nameOfStarAtIndex:(NSInteger)index
 {
-    return @"Star";
-}
-
-- (NSInteger)numberOfStarsInRadarChart:(DJLRadarChart *)radarChart
-{
-    return self.spokeValues.count;
+    return self.starNames[index];
 }
 
 - (NSInteger)numberOfSpokesInRadarChart:(DJLRadarChart *)radarChart
 {
-    return self.spokeNames.count;
+    return [self.spokeValues[0] count];
 }
+
+- (NSInteger)numberOfStarsInRadarChart:(DJLRadarChart *)radarChart
+{
+    return self.starColors.count;
+}
+
+#pragma mark -- Optional
 
 - (CGFloat)radarChart:(DJLRadarChart *)radarChart valueOfSpokeAtIndex:(NSInteger)spokeIndex forStarAtIndex:(NSInteger)starIndex
 {
     return [self.spokeValues[starIndex][spokeIndex] floatValue];
 }
 
-- (UIColor *)radarChart:(DJLRadarChart *)radarChart fillColorOfStarAtIndex:(NSInteger)index
+- (UIColor *)radarChart:(DJLRadarChart *)radarChart colorOfStarAtIndex:(NSInteger)index
 {
     return self.starColors[index];
 }
 
-- (UIColor *)radarChart:(DJLRadarChart *)radarChart strokeColorOfStarAtIndex:(NSInteger)index
+#pragma mark -- Radar chart delegate
+
+#pragma mark -- Optional
+
+- (void)radarChart:(DJLRadarChart *)radarChart
+         valueOfSpokeAtIndex:(NSInteger)spokeIndex
+              forStarAtIndex:(NSInteger)starIndex
+                   didChange:(CGFloat)value
+{
+    
+}
+
+#pragma mark -- Radar chart key data source
+
+- (NSInteger)numberOfStarsForRadarChartKey:(DJLRadarChartKey *)key
+{
+    return self.starColors.count;
+}
+
+- (NSString *)radarChartKey:(DJLRadarChartKey *)key nameOfStarAtIndex:(NSInteger)index
+{
+    return self.starNames[index];
+}
+
+- (UIColor *)radarChartKey:(DJLRadarChartKey *)key colorOfStarAtIndex:(NSInteger)index
 {
     return self.starColors[index];
 }

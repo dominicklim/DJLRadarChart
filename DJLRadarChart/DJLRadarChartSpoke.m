@@ -1,6 +1,6 @@
 //
 //  DJLRadarChartSpoke.m
-//  Danger Zone
+//  DJLRadarChart
 //
 //  Created by Dominick Lim on 5/4/13.
 //  Copyright (c) 2013 Dominick Lim. All rights reserved.
@@ -42,21 +42,19 @@
     if (self = [super initWithFrame:frame]) {
         self.continuous = NO;
         
-        UIImage *sliderMinimum = [[UIImage imageNamed:@"clearTrack"]
+        UIImage *sliderMinimum = [[UIImage imageNamed:@"noImage"]
                                   stretchableImageWithLeftCapWidth:4
                                   topCapHeight:0];
         [self setMinimumTrackImage:sliderMinimum forState:UIControlStateNormal];
         
-        UIImage *sliderMaximum = [[UIImage imageNamed:@"clearTrack"]
+        UIImage *sliderMaximum = [[UIImage imageNamed:@"noImage"]
                                   stretchableImageWithLeftCapWidth:4
                                   topCapHeight:0];
         [self setMaximumTrackImage:sliderMaximum forState:UIControlStateNormal];
-        
-//        [self setThumbImage:[UIImage imageNamed:@"smallnothumb@2x"]
-        [self setThumbImage:[UIImage imageNamed:@"nothumb"]
+
+        [self setThumbImage:[UIImage imageNamed:@"noImage"]
                    forState:UIControlStateNormal];
-//        [self setThumbImage:[UIImage imageNamed:@"smallnothumb@2x"]
-        [self setThumbImage:[UIImage imageNamed:@"nothumb"]
+        [self setThumbImage:[UIImage imageNamed:@"noImage"]
                    forState:UIControlStateHighlighted];
         _unrotatedWidth = self.frame.size.width;
     }
@@ -72,6 +70,12 @@
     return self.unrotatedWidth + self.currentThumbImage.size.width;
 }
 
+- (void)setFrame:(CGRect)frame
+{
+    [super setFrame:frame];
+    self.unrotatedWidth = frame.size.width;
+}
+
 
 #pragma mark -- UISlider method overrides
 
@@ -84,10 +88,10 @@
 
 #pragma mark -- Public methods
 
-- (CGFloat)rotationAngle
-{
-    return atan2f(self.sinAngle, self.cosAngle);
-}
+//- (CGFloat)rotationAngle
+//{
+//    return atan2f(self.sinAngle, self.cosAngle);
+//}
 
 - (CGFloat)cosAngle
 {
@@ -101,6 +105,7 @@
 
 - (CGFloat)currentThumbWidth
 {
+//    return 25;
     return self.currentThumbImage.size.width;
 }
 
@@ -121,7 +126,9 @@
 
 - (CGPoint)pointOfValue:(CGFloat)value
 {
-    CGFloat relevantWidth = self.unrotatedWidth - self.currentThumbWidth;
+    CGFloat relevantWidth = self.unrotatedWidth;
+//    CGFloat relevantWidth = self.unrotatedWidth - (self.currentThumbWidth * 4);
+//    CGFloat relevantWidth = self.unrotatedWidth - self.currentThumbWidth * 2;
     
     // Unrotated distances
     CGFloat distanceFromCenterX = relevantWidth * (value - 0.5);
@@ -146,7 +153,9 @@
 
 - (CGFloat)valueOfPoint:(CGPoint)point
 {
-    CGFloat relevantWidth = self.unrotatedWidth - self.currentThumbWidth;
+    CGFloat relevantWidth = self.unrotatedWidth;
+//    CGFloat relevantWidth = self.unrotatedWidth - (self.currentThumbWidth * 4);
+//    CGFloat relevantWidth = self.unrotatedWidth - self.currentThumbWidth * 2;
     
     // If cos(rotation angle) equals 0, the spoke is vertical (rotation angle
     // is 90' or 270').

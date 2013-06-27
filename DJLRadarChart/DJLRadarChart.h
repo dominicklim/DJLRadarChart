@@ -1,6 +1,6 @@
 //
 //  DJLRadarChart.h
-//  Danger Zone
+//  DJLRadarChart
 //
 //  Created by Dominick Lim on 5/4/13.
 //  Copyright (c) 2013 Dominick Lim. All rights reserved.
@@ -15,8 +15,8 @@ typedef NSArray DJLRadarChartStar;
 
 @interface DJLRadarChart : UIView
 
-@property (nonatomic, assign) id <DJLRadarChartDataSource> dataSource;
-@property (nonatomic, assign) id <DJLRadarChartDelegate> delegate;
+@property (nonatomic, weak) id <DJLRadarChartDataSource> dataSource;
+@property (nonatomic, weak) id <DJLRadarChartDelegate> delegate;
 
 - (void)reloadData;
 
@@ -35,8 +35,7 @@ typedef NSArray DJLRadarChartStar;
 - (CGFloat)radarChart:(DJLRadarChart *)radarChart
   valueOfSpokeAtIndex:(NSInteger)spokeIndex
        forStarAtIndex:(NSInteger)starIndex;
-- (UIColor *)radarChart:(DJLRadarChart *)radarChart fillColorOfStarAtIndex:(NSInteger)index;
-- (UIColor *)radarChart:(DJLRadarChart *)radarChart strokeColorOfStarAtIndex:(NSInteger)index;
+- (UIColor *)radarChart:(DJLRadarChart *)radarChart colorOfStarAtIndex:(NSInteger)index;
 
 @end
 

@@ -1,36 +1,50 @@
 //
 //  DJLRadarChart.m
-//  Danger Zone
+//  DJLRadarChart
 //
 //  Created by Dominick Lim on 5/4/13.
 //  Copyright (c) 2013 Dominick Lim. All rights reserved.
 //
 
 #import "DJLRadarChart.h"
-
 #import "DJLRadarChartSpoke.h"
-
-//#import "DZMath.h"
-//#import "UIView+Additions.h"
-#import <QuartzCore/QuartzCore.h>
+#import "DJLRadarChartTitleLabel.h"
 
 #define DEG2RAD(degrees) ((degrees) / 180.0f * M_PI)
 
 @interface DJLRadarChart ()<DJLRadarChartSpokeDelegate>
 
-// stars is an array of stars (arrays of spokes)
 @property (nonatomic, strong) NSArray *stars;
 @property (nonatomic, strong) NSArray *variableLabels;
 
-@property (nonatomic) CGFloat minSpoke;
-@property (nonatomic) CGFloat maxSpoke;
-@property (nonatomic) CGFloat variableLabelWidth;
+- (void)addSpokes;
+- (void)addVariableLabels;
+
+- (void)layoutSpokes;
+- (void)layoutVariableLabels;
+
+- (void)removeSpokes;
+- (void)removeVariableLabels;
+
+- (CGFloat)minSpoke;
+- (CGFloat)maxSpoke;
+- (CGFloat)variableLabelWidth;
+
+- (CGRect)squareFrameFromFrame:(CGRect)frame;
 
 - (void)forEachSpokeExecuteBlock:(void (^) (DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex))block;
 - (void)forEachAxisAtAngleExecuteBlock:(void (^)(CGFloat angle, NSInteger index))block;
 
-- (void)layoutSpokes;
-- (void)layoutVariableLabels;
+// Data source method wrappers
+- (NSString *)nameOfSpokeAtIndex:(NSInteger)index;
+- (NSString *)nameOfStarAtIndex:(NSInteger)index;
+
+- (NSInteger)numberOfSpokes;
+- (NSInteger)numberOfStars;
+
+- (CGFloat)valueOfSpokeAtIndex:(NSInteger)spokeIndex
+                forStarAtIndex:(NSInteger)starIndex;
+- (UIColor *)colorOfStarAtIndex:(NSInteger)index;
 
 @end
 
@@ -40,43 +54,11 @@
 
 - (id)initWithFrame:(CGRect)frame
 {
-    if (self = [super initWithFrame:frame]) {
+    if (self = [super initWithFrame:[self squareFrameFromFrame:frame]]) {
         self.backgroundColor = [UIColor clearColor];
     }
     
     return self;
-}
-
-- (void)addSpokes
-{
-    [self forEachSpokeExecuteBlock:^(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex) {
-        [self addSubview:spoke];
-    }];
-}
-
-- (void)removeSpokes
-{
-    [self forEachSpokeExecuteBlock:^(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex) {
-        [spoke removeFromSuperview];
-    }];
-    
-    self.stars = nil;
-}
-
-- (void)addVariableLabels
-{
-    for (UILabel *label in self.variableLabels) {
-        [self addSubview:label];
-    }
-}
-
-- (void)removeVariableLabels
-{
-    for (UILabel *label in self.variableLabels) {
-        [label removeFromSuperview];
-    }
-    
-    self.variableLabels = nil;
 }
 
 
@@ -114,8 +96,8 @@
 }
 
 - (void)drawTickAtDistance:(CGFloat)distance context:(CGContextRef)ctx
-{    
-    if ([self.dataSource numberOfSpokesInRadarChart:self] == 0) {
+{
+    if ([self numberOfSpokes] == 0) {
         return;
     }
     
@@ -126,8 +108,8 @@
     
     [self forEachAxisAtAngleExecuteBlock:^(CGFloat angle, NSInteger index) {
         CGPoint point = {
-            CGRectGetMidX(self.frame) + distance * sinf(angle),
-            CGRectGetMidY(self.frame) + distance * cosf(angle)
+            CGRectGetMidX(self.bounds) + distance * sinf(angle),
+            CGRectGetMidY(self.bounds) + distance * cosf(angle)
         };
 
         if (index == 0) {
@@ -189,13 +171,13 @@
     CGMutablePathRef path = CGPathCreateMutable();
 
     CGPoint startingPoint = {
-        CGRectGetMidX(self.frame) + self.minSpoke * sinf(angle),
-        CGRectGetMidY(self.frame) + self.minSpoke * cosf(angle)
+        CGRectGetMidX(self.bounds) + self.minSpoke * sinf(angle),
+        CGRectGetMidY(self.bounds) + self.minSpoke * cosf(angle)
     };
     
     CGPoint endPoint = {
-        CGRectGetMidX(self.frame) + self.maxSpoke * sinf(angle),
-        CGRectGetMidY(self.frame) + self.maxSpoke * cosf(angle)
+        CGRectGetMidX(self.bounds) + self.maxSpoke * sinf(angle),
+        CGRectGetMidY(self.bounds) + self.maxSpoke * cosf(angle)
     };
 
     CGPathMoveToPoint(path, NULL, startingPoint.x, startingPoint.y);
@@ -224,8 +206,7 @@
     CGContextBeginPath(ctx);
     
     CGMutablePathRef path = CGPathCreateMutable();
-    
-    
+
     for (int i = 0; i < [self.stars[index] count]; i++) {
         CGPoint spokePoint = [self.stars[index][i] pointOfValue];
         
@@ -235,19 +216,18 @@
             CGPathAddLineToPoint(path, NULL, spokePoint.x, spokePoint.y);
         }
     }
-    
-    UIColor *fillColor = [self.dataSource radarChart:self fillColorOfStarAtIndex:index];
-    UIColor *strokeColor = [self.dataSource radarChart:self strokeColorOfStarAtIndex:index];
-    
+
+    UIColor *color = [self colorOfStarAtIndex:index];
+
     CGFloat red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
     
-    [fillColor getRed:&red green:&green blue:&blue alpha:&alpha];
+    [color getRed:&red green:&green blue:&blue alpha:&alpha];
     
     CGContextAddPath(ctx, path);
     CGContextSaveGState(ctx);
     
     CGContextClosePath(ctx);
-    CGContextSetRGBFillColor(ctx, red, green, blue, 0.6);
+    CGContextSetRGBFillColor(ctx, red, green, blue, 1.0 / [self numberOfStars]);
     CGContextFillPath(ctx);
     
     CGContextRestoreGState(ctx);
@@ -255,27 +235,25 @@
     CGContextAddPath(ctx, path);
     CGContextSaveGState (ctx);
     
-    [strokeColor getRed:&red green:&green blue:&blue alpha:&alpha];
+    [color getRed:&red green:&green blue:&blue alpha:&alpha];
     
     CGContextClosePath(ctx);
     CGContextSetRGBStrokeColor(ctx, red, green, blue, 1.0);
     CGContextStrokePath(ctx);
-    
+
     CGPathRelease(path);
 }
 
 - (void)drawCirclesAtVerticesWithContext:(CGContextRef)ctx
-{   
-//    NSInteger circleRadius = 12.5;
-    NSInteger circleRadius = 5;
-    
+{
     [self forEachSpokeExecuteBlock:^(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex) {
-        UIColor *strokeColor = [self.dataSource radarChart:self strokeColorOfStarAtIndex:starIndex];
+        NSInteger circleRadius = spoke.unrotatedWidth / 50;
+        UIColor *color = [self colorOfStarAtIndex:starIndex];
         
         CGFloat red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
         
-        [strokeColor getRed:&red green:&green blue:&blue alpha:&alpha];
-        CGContextSetRGBFillColor(ctx, red, green, blue, 1);
+        [color getRed:&red green:&green blue:&blue alpha:&alpha];
+        CGContextSetRGBFillColor(ctx, red, green, blue, alpha);
         
         CGPoint spokePoint = [spoke pointOfValue];
         CGContextFillEllipseInRect(ctx, (CGRect) {spokePoint.x - circleRadius, spokePoint.y - circleRadius, circleRadius * 2, circleRadius * 2});
@@ -312,8 +290,8 @@
 - (NSArray *)stars
 {
     if (!_stars) {
-        NSInteger numberOfSpokes = [self.dataSource numberOfSpokesInRadarChart:self];
-        NSInteger numberOfStars = [self.dataSource numberOfStarsInRadarChart:self];
+        NSInteger numberOfSpokes = [self numberOfSpokes];
+        NSInteger numberOfStars = [self numberOfStars];
         
         NSMutableArray *stars = [NSMutableArray arrayWithCapacity:numberOfStars];
         
@@ -321,7 +299,7 @@
             NSMutableArray *spokes = [NSMutableArray arrayWithCapacity:numberOfSpokes];
             
             for (int j = 0; j < numberOfSpokes; j++) {
-                DJLRadarChartSpoke *spoke = [[DJLRadarChartSpoke alloc] initWithValue:[self.dataSource radarChart:self valueOfSpokeAtIndex:j forStarAtIndex:i]];
+                DJLRadarChartSpoke *spoke = [[DJLRadarChartSpoke alloc] initWithValue:[self valueOfSpokeAtIndex:j forStarAtIndex:i]];
                 spoke.delegate = self;
                 
                 [spokes addObject:spoke];
@@ -342,46 +320,11 @@
 - (NSArray *)variableLabels
 {
     if (!_variableLabels) {
-        NSInteger numberOfSpokes = [self.dataSource numberOfSpokesInRadarChart:self];
-        NSMutableArray *variableLabels = [NSMutableArray arrayWithCapacity:numberOfSpokes];
+        NSMutableArray *variableLabels = [NSMutableArray arrayWithCapacity:[self numberOfSpokes]];
         
-        for (int i = 0; i < numberOfSpokes; i++) {
-            UILabel *variableLabel = [[UILabel alloc] initWithFrame:(CGRect){0, 0, self.variableLabelWidth, self.variableLabelWidth}];
-            variableLabel.text = [self.dataSource radarChart:self nameOfSpokeAtIndex:i];
-            
-            variableLabel.adjustsFontSizeToFitWidth = YES;
-            variableLabel.userInteractionEnabled = YES;
-
-//            variableLabel.layer.borderColor = [UIColor colorWithRed:231.0 / 255
-//                                                              green:67.0 / 255
-//                                                               blue:60.0 / 255
-//                                                              alpha:1].CGColor;
-//            variableLabel.layer.borderColor = [UIColor lightGrayColor].CGColor;
-            variableLabel.layer.borderColor = [UIColor darkGrayColor].CGColor;
-            
-            variableLabel.layer.borderWidth = 2;
-            
-            variableLabel.layer.cornerRadius = variableLabel.frame.size.height / 5;
-
-//            variableLabel.backgroundColor = [UIColor colorWithRed:192.0 / 255
-//                                                            green:57.0 / 255
-//                                                             blue:43.0 / 255
-//                                                            alpha:1];
-//            variableLabel.backgroundColor = [UIColor darkGrayColor];
-            variableLabel.backgroundColor = [UIColor lightGrayColor];
-
-//            variableLabel.textColor = [UIColor whiteColor];
-            variableLabel.textColor = [UIColor blackColor];
-
-            variableLabel.font = [UIFont boldSystemFontOfSize:[UIFont systemFontSize]];
-            variableLabel.textAlignment = NSTextAlignmentCenter;
-            
-            UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc]
-                                                     initWithTarget:self
-                                                     action:@selector(handleVariableLabelTap:)];
-            
-            [variableLabel addGestureRecognizer:tapRecognizer];
-            
+        for (int i = 0; i < [self numberOfSpokes]; i++) {
+            DJLRadarChartTitleLabel *variableLabel = [[DJLRadarChartTitleLabel alloc] init];
+            variableLabel.text = [self nameOfSpokeAtIndex:i];
             [variableLabels addObject:variableLabel];
         }
         
@@ -393,9 +336,7 @@
 
 - (CGFloat)minSpoke
 {
-    CGFloat thumbWidth = 25.0;
-    CGFloat circum = [self.dataSource numberOfSpokesInRadarChart:self] * (thumbWidth + 1.0);
-    return circum / (2 * M_PI);
+    return 0;
 }
 
 - (CGFloat)maxSpoke
@@ -405,11 +346,24 @@
 
 - (CGFloat)variableLabelWidth
 {
-    return 30;
+    return self.frame.size.width / 5.f;
+}
+
+- (CGRect)squareFrameFromFrame:(CGRect)frame
+{
+    CGFloat length = (frame.size.width > frame.size.height) ? frame.size.height : frame.size.width;
+    frame.size = (CGSize){length, length};
+
+    return frame;
 }
 
 
 #pragma mark -- Public methods
+
+- (void)setFrame:(CGRect)frame
+{
+    [super setFrame:[self squareFrameFromFrame:frame]];
+}
 
 - (void)reloadData
 {
@@ -423,6 +377,89 @@
 
 #pragma mark -- Private methods
 
+- (void)addSpokes
+{
+    [self forEachSpokeExecuteBlock:^(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex) {
+        [self addSubview:spoke];
+    }];
+}
+
+- (void)addVariableLabels
+{
+    for (DJLRadarChartTitleLabel *label in self.variableLabels) {
+        [self addSubview:label];
+    }
+}
+
+- (void)layoutSpokes
+{
+    if ([self numberOfSpokes] == 0) return;
+    
+    CGFloat centerDistanceFromCenter = (self.minSpoke + self.maxSpoke) / 2;
+    CGFloat angleBetweenVertices = 360.0 / [self numberOfSpokes];
+    CGFloat width = (self.maxSpoke - self.minSpoke);
+    
+    [self forEachSpokeExecuteBlock:^(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex) {
+        
+        // if the spoke hasn't been rotated yet, rotate it.
+        if (spoke.cosAngle == 1 && spoke.sinAngle == 0) {
+            spoke.frame = (CGRect){spoke.frame.origin, width, spoke.frame.size.height};
+            spoke.transform = CGAffineTransformRotate(spoke.transform, DEG2RAD((angleBetweenVertices * spokeIndex) - 90));
+        }
+        
+        spoke.center = (CGPoint){
+            CGRectGetMidX(self.bounds) + centerDistanceFromCenter * spoke.cosAngle,
+            CGRectGetMidY(self.bounds) + centerDistanceFromCenter * spoke.sinAngle
+        };
+    }];
+}
+
+- (void)layoutVariableLabels
+{
+    // we want all fonts to be the same size, so we set all font sizes to the
+    // smallest font size.
+    __block CGFloat smallestFontSize = -1;
+    
+    [self forEachAxisAtAngleExecuteBlock:^(CGFloat angle, NSInteger index) {
+        DJLRadarChartTitleLabel *variableLabel = self.variableLabels[index];
+        variableLabel.frame = (CGRect){0, 0, self.variableLabelWidth, self.variableLabelWidth};
+        
+        if (smallestFontSize == -1 || variableLabel.font.pointSize < smallestFontSize) {
+            smallestFontSize = variableLabel.font.pointSize;
+        }
+        
+        CGPoint center = {
+            CGRectGetMidX(self.bounds) + (self.variableLabelWidth / 2 + self.maxSpoke) * sinf(angle),
+            CGRectGetMidY(self.bounds) + (self.variableLabelWidth / 2 + self.maxSpoke) * -cosf(-angle)
+        };
+        
+        [variableLabel setCenter:center];
+    }];
+
+    [self forEachAxisAtAngleExecuteBlock:^(CGFloat angle, NSInteger index) {
+        DJLRadarChartTitleLabel *variableLabel = self.variableLabels[index];
+        [variableLabel setFont:[UIFont fontWithName:variableLabel.font.fontName size:smallestFontSize]];
+    }];
+}
+
+- (void)removeSpokes
+{
+    [self forEachSpokeExecuteBlock:^(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex) {
+        [spoke removeFromSuperview];
+    }];
+    
+    self.stars = nil;
+}
+
+- (void)removeVariableLabels
+{
+    for (DJLRadarChartTitleLabel *label in self.variableLabels) {
+        [label removeFromSuperview];
+    }
+    
+    self.variableLabels = nil;
+}
+
 - (void)forEachSpokeExecuteBlock:(void (^)(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex))block
 {
     for (int i = 0; i < self.stars.count; i++) {
@@ -434,54 +471,72 @@
 
 - (void)forEachAxisAtAngleExecuteBlock:(void (^)(CGFloat angle, NSInteger index))block
 {
-    NSInteger numberOfSpokes = [self.dataSource numberOfSpokesInRadarChart:self];
-    
-    if (numberOfSpokes == 0) {
+    if ([self numberOfSpokes] == 0) {
         return;
     }
     
-    CGFloat angleBetweenVertices = 360.0 / numberOfSpokes;
+    CGFloat angleBetweenVertices = 360.0 / [self numberOfSpokes];
     
-    for (int i = 0; i < numberOfSpokes; i++) {
+    for (int i = 0; i < [self numberOfSpokes]; i++) {
         block(DEG2RAD(angleBetweenVertices * i), i);
     }
 }
 
-- (void)layoutSpokes
+
+#pragma mark -- Data source method wrappers
+
+- (NSString *)nameOfSpokeAtIndex:(NSInteger)index
 {
-    CGFloat centerDistanceFromCenter = (self.minSpoke + self.maxSpoke) / 2;
-    CGFloat angleBetweenVertices = 360.0 / [self.dataSource numberOfSpokesInRadarChart:self];
-    CGFloat width = (self.maxSpoke - self.minSpoke);
+    if ([self.dataSource respondsToSelector:@selector(radarChart:nameOfSpokeAtIndex:)]) {
+        return [self.dataSource radarChart:self nameOfSpokeAtIndex:index];
+    }
+
+    return @"";
+}
+- (NSString *)nameOfStarAtIndex:(NSInteger)index
+{
+    if ([self.dataSource respondsToSelector:@selector(radarChart:nameOfStarAtIndex:)]) {
+        return [self.dataSource radarChart:self nameOfStarAtIndex:index];
+    }
     
-    [self forEachSpokeExecuteBlock:^(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex) {
-        
-        // if the spoke hasn't been rotated yet, rotate it.
-        if (spoke.cosAngle == 1 && spoke.sinAngle == 0) {
-            spoke.frame = (CGRect){spoke.frame.origin, width, spoke.frame.size.height};
-            spoke.transform = CGAffineTransformRotate(spoke.transform, DEG2RAD((angleBetweenVertices * spokeIndex) - 90));
-        }
-
-        spoke.center = (CGPoint){
-            CGRectGetMidX(self.frame) + centerDistanceFromCenter * spoke.cosAngle,
-            CGRectGetMidY(self.frame) + centerDistanceFromCenter * spoke.sinAngle
-        };
-    }];
+    return @"";
 }
 
-- (void)layoutVariableLabels
+- (NSInteger)numberOfSpokes
 {
-    [self forEachAxisAtAngleExecuteBlock:^(CGFloat angle, NSInteger index) {
-        CGPoint center = {
-            CGRectGetMidX(self.frame) + (self.variableLabelWidth + self.maxSpoke) * sinf(angle),
-            CGRectGetMidY(self.frame) + (self.variableLabelWidth + self.maxSpoke) * -cosf(-angle)
-        };
-        [self.variableLabels[index] setCenter:center];
-    }];
+    if ([self.dataSource respondsToSelector:@selector(numberOfSpokesInRadarChart:)]) {
+        return [self.dataSource numberOfSpokesInRadarChart:self];
+    }
+
+    return 0;
 }
 
-- (void)handleVariableLabelTap:(UITapGestureRecognizer *)sender
+- (NSInteger)numberOfStars
 {
-//    ((DJLRadarChartSpoke *)self.spokes[[self.variableLabels indexOfObject:sender.view]]).value += 0.1;
+    if ([self.dataSource respondsToSelector:@selector(numberOfStarsInRadarChart:)]) {
+        return [self.dataSource numberOfStarsInRadarChart:self];
+    }
+
+    return 0;
+}
+
+- (CGFloat)valueOfSpokeAtIndex:(NSInteger)spokeIndex
+                forStarAtIndex:(NSInteger)starIndex
+{
+    if ([self.dataSource respondsToSelector:@selector(radarChart:valueOfSpokeAtIndex:forStarAtIndex:)]) {
+        return [self.dataSource radarChart:self valueOfSpokeAtIndex:spokeIndex forStarAtIndex:starIndex];
+    }
+
+    return 1.0;
+}
+
+- (UIColor *)colorOfStarAtIndex:(NSInteger)index
+{
+    if ([self.dataSource respondsToSelector:@selector(radarChart:colorOfStarAtIndex:)]) {
+        return [self.dataSource radarChart:self colorOfStarAtIndex:index];
+    }
+
+    return [UIColor grayColor];
 }
 
 
@@ -490,9 +545,10 @@
 - (void)spoke:(DJLRadarChartSpoke *)spoke valueDidChange:(float)value
 {
     [self setNeedsDisplay];
-    
-//    [self.delegate radarChart:self valueOfSpokeAtIndex:[self.stars indexOfObject:spoke] forStarAtIndex:0 didChange:value];
-}
 
+    if ([self.delegate respondsToSelector:@selector(radarChart:valueOfSpokeAtIndex:forStarAtIndex:didChange:)]) {
+        [self.delegate radarChart:self valueOfSpokeAtIndex:[self.stars indexOfObject:spoke] forStarAtIndex:0 didChange:value];
+    }
+}
 
 @end
