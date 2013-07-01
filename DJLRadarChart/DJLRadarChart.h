@@ -30,6 +30,8 @@ typedef NSArray DJLRadarChartStar;
 
 - (NSInteger)numberOfSpokesInRadarChart:(DJLRadarChart *)radarChart;
 - (NSInteger)numberOfStarsInRadarChart:(DJLRadarChart *)radarChart;
+- (CGFloat)maxValueOfRadarChart:(DJLRadarChart *)radarChart;
+- (CGFloat)minValueOfRadarChart:(DJLRadarChart *)radarChart;
 
 @optional
 - (CGFloat)radarChart:(DJLRadarChart *)radarChart

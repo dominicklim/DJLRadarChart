@@ -12,19 +12,25 @@
 
 #define DEG2RAD(degrees) ((degrees) / 180.0f * M_PI)
 
+static const int kNumberOfTicks = 6;
+
 @interface DJLRadarChart ()<DJLRadarChartSpokeDelegate>
 
 @property (nonatomic, strong) NSArray *stars;
 @property (nonatomic, strong) NSArray *variableLabels;
+@property (nonatomic, strong) NSArray *tickLabels;
 
 - (void)addSpokes;
 - (void)addVariableLabels;
+- (void)addTickLabels;
 
 - (void)layoutSpokes;
 - (void)layoutVariableLabels;
+- (void)layoutTickLabels;
 
 - (void)removeSpokes;
 - (void)removeVariableLabels;
+- (void)removeTickLabels;
 
 - (CGFloat)minSpoke;
 - (CGFloat)maxSpoke;
@@ -41,7 +47,11 @@
 
 - (NSInteger)numberOfSpokes;
 - (NSInteger)numberOfStars;
+- (CGFloat)maxValue;
+- (CGFloat)minValue;
 
+- (CGFloat)percentValueOfSpokeAtIndex:(NSInteger)spokeIndex
+                       forStarAtIndex:(NSInteger)starIndex;
 - (CGFloat)valueOfSpokeAtIndex:(NSInteger)spokeIndex
                 forStarAtIndex:(NSInteger)starIndex;
 - (UIColor *)colorOfStarAtIndex:(NSInteger)index;
@@ -74,9 +84,7 @@
 
 - (void)drawRect:(CGRect)rect
 {
-    if (self.stars.count < 1 || self.dataSource == nil) {
-        return;
-    }
+    if (self.stars.count < 1 || self.dataSource == nil) return;
     
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
@@ -88,24 +96,26 @@
 
 - (void)drawTicksWithContext:(CGContextRef)ctx
 {
-    CGFloat numberOfTicks = 5.0;
-    
-    for (int i = 0; i < numberOfTicks; i++) {
-        [self drawTickAtDistance:(i * (self.maxSpoke - self.minSpoke) / (numberOfTicks - 1)) + self.minSpoke context:ctx];
+    CGFloat increment = (self.maxSpoke - self.minSpoke) / (kNumberOfTicks - 1);
+
+    for (int i = 0; i < kNumberOfTicks; i++) {
+        CGFloat distance = (i * increment) + self.minSpoke;
+        [self drawTickAtDistance:distance context:ctx];
+        DJLRadarChartTitleLabel *tickLabel = self.tickLabels[i];
+        [tickLabel setFrame:(CGRect){CGRectGetMidX(self.bounds) + increment / 10, 0, increment / 1.5, self.variableLabelWidth}];
+        [tickLabel setCenter:(CGPoint){tickLabel.center.x, CGRectGetMidY(self.bounds) - (self.minSpoke + distance)}];
     }
 }
 
 - (void)drawTickAtDistance:(CGFloat)distance context:(CGContextRef)ctx
 {
-    if ([self numberOfSpokes] == 0) {
-        return;
-    }
-    
+    if (self.numberOfSpokes == 0) return;
+
     CGContextSetLineWidth(ctx, 1.0);
-    
+
     CGContextBeginPath(ctx);
     CGMutablePathRef path = CGPathCreateMutable();
-    
+
     [self forEachAxisAtAngleExecuteBlock:^(CGFloat angle, NSInteger index) {
         CGPoint point = {
             CGRectGetMidX(self.bounds) + distance * sinf(angle),
@@ -121,38 +131,11 @@
     
     CGContextAddPath(ctx, path);
     CGContextSaveGState (ctx);
-    
-    CGContextClosePath(ctx);
-    CGContextSetRGBStrokeColor(ctx, 0.5, 0.5, 0.5, 1);
-    CGContextStrokePath(ctx);
-    
-    CGPathRelease(path);
-}
 
-- (void)drawTickAtValue:(CGFloat)value context:(CGContextRef)ctx
-{
-    CGContextSetLineWidth(ctx, 1.0);
-    
-    CGContextBeginPath(ctx);
-    CGMutablePathRef path = CGPathCreateMutable();
-    
-    [self forEachSpokeExecuteBlock:^(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex) {
-        CGPoint spokePoint = [spoke pointOfValue];
-        
-        if (spokeIndex == 0) {
-            CGPathMoveToPoint(path, NULL, spokePoint.x, spokePoint.y);
-        } else {
-            CGPathAddLineToPoint(path, NULL, spokePoint.x, spokePoint.y);
-        }
-    }];
-    
-    CGContextAddPath(ctx, path);
-    CGContextSaveGState (ctx);
-    
     CGContextClosePath(ctx);
     CGContextSetRGBStrokeColor(ctx, 0.5, 0.5, 0.5, 1);
     CGContextStrokePath(ctx);
-    
+
     CGPathRelease(path);
 }
 
@@ -217,16 +200,12 @@
         }
     }
 
-    UIColor *color = [self colorOfStarAtIndex:index];
-
-    CGFloat red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
-    
-    [color getRed:&red green:&green blue:&blue alpha:&alpha];
-    
     CGContextAddPath(ctx, path);
     CGContextSaveGState(ctx);
-    
     CGContextClosePath(ctx);
+    
+    CGFloat red = 0.0, green = 0.0, blue = 0.0;
+    [[self colorOfStarAtIndex:index] getRed:&red green:&green blue:&blue alpha:nil];
     CGContextSetRGBFillColor(ctx, red, green, blue, 1.0 / [self numberOfStars]);
     CGContextFillPath(ctx);
     
@@ -234,9 +213,7 @@
     
     CGContextAddPath(ctx, path);
     CGContextSaveGState (ctx);
-    
-    [color getRed:&red green:&green blue:&blue alpha:&alpha];
-    
+
     CGContextClosePath(ctx);
     CGContextSetRGBStrokeColor(ctx, red, green, blue, 1.0);
     CGContextStrokePath(ctx);
@@ -248,13 +225,11 @@
 {
     [self forEachSpokeExecuteBlock:^(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex) {
         NSInteger circleRadius = spoke.unrotatedWidth / 50;
-        UIColor *color = [self colorOfStarAtIndex:starIndex];
-        
+
         CGFloat red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
-        
-        [color getRed:&red green:&green blue:&blue alpha:&alpha];
+        [[self colorOfStarAtIndex:starIndex] getRed:&red green:&green blue:&blue alpha:&alpha];
         CGContextSetRGBFillColor(ctx, red, green, blue, alpha);
-        
+
         CGPoint spokePoint = [spoke pointOfValue];
         CGContextFillEllipseInRect(ctx, (CGRect) {spokePoint.x - circleRadius, spokePoint.y - circleRadius, circleRadius * 2, circleRadius * 2});
     }];
@@ -299,7 +274,7 @@
             NSMutableArray *spokes = [NSMutableArray arrayWithCapacity:numberOfSpokes];
             
             for (int j = 0; j < numberOfSpokes; j++) {
-                DJLRadarChartSpoke *spoke = [[DJLRadarChartSpoke alloc] initWithValue:[self valueOfSpokeAtIndex:j forStarAtIndex:i]];
+                DJLRadarChartSpoke *spoke = [[DJLRadarChartSpoke alloc] initWithValue:[self percentValueOfSpokeAtIndex:j forStarAtIndex:i]];
                 spoke.delegate = self;
                 
                 [spokes addObject:spoke];
@@ -310,7 +285,6 @@
         }
         
         _stars = stars;
-        
         stars = nil;
     }
     
@@ -329,9 +303,30 @@
         }
         
         _variableLabels = variableLabels;
+        variableLabels = nil;
     }
     
     return _variableLabels;
+}
+
+- (NSArray *)tickLabels
+{
+    if (!_tickLabels) {
+        NSMutableArray *tickLabels = [NSMutableArray arrayWithCapacity:kNumberOfTicks];
+        
+        for (int i = 0; i < kNumberOfTicks; i++) {
+            DJLRadarChartTitleLabel *tickLabel = [[DJLRadarChartTitleLabel alloc] init];
+            tickLabel.font = [UIFont systemFontOfSize:[UIFont systemFontSize]];
+            CGFloat increment = (self.maxValue - self.minValue) / (kNumberOfTicks - 1);
+            tickLabel.text = [NSString stringWithFormat:@"%.1f", (increment * i) + self.minValue];
+            [tickLabels addObject:tickLabel];
+        }
+
+        _tickLabels = tickLabels;
+        tickLabels = nil;
+    }
+    
+    return _tickLabels;
 }
 
 - (CGFloat)minSpoke
@@ -369,9 +364,11 @@
 {
     [self removeSpokes];
     [self removeVariableLabels];
+    [self removeTickLabels];
     
     [self addSpokes];
     [self addVariableLabels];
+    [self addTickLabels];
 }
 
 
@@ -391,6 +388,13 @@
     }
 }
 
+- (void)addTickLabels
+{
+    for (DJLRadarChartTitleLabel *label in self.tickLabels) {
+        [self addSubview:label];
+    }
+}
+
 - (void)layoutSpokes
 {
     if ([self numberOfSpokes] == 0) return;
@@ -401,12 +405,12 @@
     
     [self forEachSpokeExecuteBlock:^(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex) {
         
-        // if the spoke hasn't been rotated yet, rotate it.
+        // Rotate the spoke if it hasn't been rotated yet
         if (spoke.cosAngle == 1 && spoke.sinAngle == 0) {
             spoke.frame = (CGRect){spoke.frame.origin, width, spoke.frame.size.height};
             spoke.transform = CGAffineTransformRotate(spoke.transform, DEG2RAD((angleBetweenVertices * spokeIndex) - 90));
         }
-        
+
         spoke.center = (CGPoint){
             CGRectGetMidX(self.bounds) + centerDistanceFromCenter * spoke.cosAngle,
             CGRectGetMidY(self.bounds) + centerDistanceFromCenter * spoke.sinAngle
@@ -416,8 +420,8 @@
 
 - (void)layoutVariableLabels
 {
-    // we want all fonts to be the same size, so we set all font sizes to the
-    // smallest font size.
+    // All variable labels should have the same font size, so we set all the
+    // font size of all variable labels to the smallest font size.
     __block CGFloat smallestFontSize = -1;
     
     [self forEachAxisAtAngleExecuteBlock:^(CGFloat angle, NSInteger index) {
@@ -442,6 +446,11 @@
     }];
 }
 
+- (void)layoutTickLabels
+{
+    
+}
+
 - (void)removeSpokes
 {
     [self forEachSpokeExecuteBlock:^(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex) {
@@ -458,6 +467,15 @@
     }
     
     self.variableLabels = nil;
+}
+
+- (void)removeTickLabels
+{
+    for (DJLRadarChartTitleLabel *label in self.tickLabels) {
+        [label removeFromSuperview];
+    }
+    
+    self.tickLabels = nil;
 }
 
 - (void)forEachSpokeExecuteBlock:(void (^)(DJLRadarChartSpoke *spoke, NSInteger starIndex, NSInteger spokeIndex))block
@@ -520,6 +538,12 @@
     return 0;
 }
 
+- (CGFloat)percentValueOfSpokeAtIndex:(NSInteger)spokeIndex
+                       forStarAtIndex:(NSInteger)starIndex
+{
+    return [self valueOfSpokeAtIndex:spokeIndex forStarAtIndex:starIndex] / (self.maxValue - self.minValue);
+}
+
 - (CGFloat)valueOfSpokeAtIndex:(NSInteger)spokeIndex
                 forStarAtIndex:(NSInteger)starIndex
 {
@@ -537,6 +561,24 @@
     }
 
     return [UIColor grayColor];
+}
+
+- (CGFloat)maxValue
+{
+    if ([self.dataSource respondsToSelector:@selector(maxValueOfRadarChart:)]) {
+        return [self.dataSource maxValueOfRadarChart:self];
+    }
+    
+    return 1.0;
+}
+
+- (CGFloat)minValue
+{
+    if ([self.dataSource respondsToSelector:@selector(minValueOfRadarChart:)]) {
+        return [self.dataSource minValueOfRadarChart:self];
+    }
+    
+    return 0.0;
 }
 
 
