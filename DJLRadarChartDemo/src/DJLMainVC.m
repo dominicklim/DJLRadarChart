@@ -124,7 +124,7 @@ static const int kNumberOfSpokes = 6;
         for (int i = 0; i < kNumberOfStars; i++) {
             NSMutableArray *star = [NSMutableArray arrayWithCapacity:kNumberOfSpokes];
             for (int j = 0; j < kNumberOfSpokes; j++) {
-                CGFloat randomValue = (CGFloat)random() / RAND_MAX * (kMaxValue - kMinValue) + kMinValue;
+                CGFloat randomValue = (CGFloat)arc4random() / RAND_MAX * (kMaxValue - kMinValue) + kMinValue;
                 [star addObject:@(randomValue)];
             }
             [spokeValues addObject:star];
